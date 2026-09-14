@@ -1,0 +1,83 @@
+const formidable = require("formidable");
+const cloudinary = require("cloudinary").v2;
+const productModel = require("../../models/productModel");
+const { responseReturn } = require("../../utils/response");
+
+class productController {
+  add_product = async (req, res) => {
+    const { id } = req;
+    const form = formidable({ multiples: true });
+
+    form.parse(req, async (err, field, files) => {
+      if (err) {
+        responseReturn(res, 404, { error: "Something went wrong" });
+      } else {
+        let {
+          name,
+          category,
+          description,
+          stock,
+          price,
+          discount,
+          shopName,
+          brand,
+        } = field;
+        let { images } = files;
+
+        // Cloudinary Configuration
+        cloudinary.config({
+          cloud_name: process.env.cloud_name,
+          api_key: process.env.api_key,
+          api_secret: process.env.api_secret,
+          secure: true,
+        });
+
+        // Slug generation logic (Kazi Aryan pattern)
+        name = name.trim();
+        const slug = name.split(" ").join("-");
+
+        try {
+          let allImageUrl = [];
+
+          // Handle single or array of images
+          if (!Array.isArray(images)) {
+            images = [images];
+          }
+
+          for (let i = 0; i < images.length; i++) {
+            const result = await cloudinary.uploader.upload(
+              images[i].filepath,
+              {
+                folder: "products",
+              },
+            );
+            allImageUrl.push(result.url);
+          }
+
+          const product = await productModel.create({
+            sellerId: id,
+            name,
+            slug,
+            shopName,
+            category: category.trim(),
+            description: description.trim(),
+            stock: parseInt(stock),
+            price: parseInt(price),
+            discount: parseInt(discount),
+            images: allImageUrl,
+            brand: brand.trim(),
+          });
+
+          responseReturn(res, 201, {
+            product,
+            message: "Product added successfully",
+          });
+        } catch (error) {
+          responseReturn(res, 500, { error: error.message });
+        }
+      }
+    });
+  };
+}
+
+module.exports = new productController();

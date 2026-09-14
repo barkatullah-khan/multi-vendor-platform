@@ -1,0 +1,53 @@
+npm install react@18.2.0
+
+For Dashboard
+npm i apexcharts react-apexcharts axios jwt-decode moment react-hot-toast react-icons @reduxjs/toolkit react-redux react-spinners react-window redux-thunk socket.io-client
+
+For backend
+npm i express bcrypt body-parser cloudinary cookie-parser cors dotenv formidable jsonwebtoken moment mongoose socket.io stripe uuid
+
+For Frontend 
+npm install @reduxjs/toolkit react-redux axios react-hot-toast stripe react-icons react-multi-carousel react-range react-rating react-router-dom react-spinners socket.io-client 
+
+npm uninstall formidable
+npm install formidable@2.1.1
+
+npm i jwt-decode
+npm i stripe uuid 
+
+npm i @stripe/stripe-js --force   
+npm i @stripe/react-stripe-js
+ 
+
+In main project 
+Admin Login
+ariyan@gmail.com
+123456
+
+Seller Login
+seller@gmail.com
+udemy12345
+
+User Login 
+user@gmail.com
+udemy12345
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
