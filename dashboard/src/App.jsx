@@ -12,15 +12,14 @@ const App = () => {
 
   useEffect(() => {
     const routes = getRoutes();
-    setAllRoutes((prevState) => [...prevState, routes]);
+    setAllRoutes((prevState) => [...prevState, ...routes]); // ✅ Fixed with spread operator (...)
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
     if (token) {
-      dispatch(get_user_info());
+        dispatch(get_user_info());
     }
-  }, [token, dispatch]);
-
+}, [token]);
   return <Router allRoutes={allRoutes} />;
 };
 

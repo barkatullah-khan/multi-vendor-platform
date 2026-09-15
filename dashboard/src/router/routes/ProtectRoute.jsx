@@ -3,54 +3,69 @@ import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 
 const ProtectRoute = ({ route, children }) => {
-    const { role, userInfo } = useSelector(state => state.auth);
+    const { role, userInfo, loader } = useSelector(state => state.auth);
 
-    // 1. Check if the user is authenticated at all (has a role)
+    // If Redux slice is flagged as loading, show session loader
+    if (loader) {
+        return (
+            <div className="flex justify-center items-center h-screen bg-[#cdcae9] text-white">
+                <h2>Loading session...</h2>
+            </div>
+        );
+    }
+
+    // 1. Check if the user is authenticated at all
     if (role) {
-        
-        // 2. Check if the route requires a specific role layout match
+        // 2. Check role layout match
         if (route.role) {
-            if (userInfo.role === route.role) {
-                
-                // 3. Handle specific status checks for sellers (pending/deactive accounts)
+            // Compare against Redux state 'role' instead of empty userInfo on reload
+            if (role === route.role) {
+                // 3. Status checks for sellers
                 if (route.status) {
-                    if (route.status === userInfo.status) {
-                        return <Suspense fallback={null}>{children}</Suspense>;
-                    } else {
-                        if (userInfo.status === 'pending') {
-                            return <Navigate to='/seller/account-pending' replace />;
-                        } else if (userInfo.status === 'deactive') {
-                            return <Navigate to='/seller/account-deactive' replace />;
+                    // Make sure userInfo has populated before reading status properties
+                    if (userInfo && userInfo.status) {
+                        if (route.status === userInfo.status) {
+                            return <Suspense fallback={null}>{children}</Suspense>;
+                        } else {
+                            if (userInfo.status === 'pending') {
+                                return <Navigate to='/seller/account-pending' replace />;
+                            } else if (userInfo.status === 'deactive') {
+                                return <Navigate to='/seller/account-deactive' replace />;
+                            }
                         }
+                    } else {
+                        // User info is still fetching right after a hard refresh, show a brief loader
+                        return (
+                            <div className="flex justify-center items-center h-screen bg-[#cdcae9] text-white">
+                                <h2 className="text-lg font-semibold">Loading user data...</h2>
+                            </div>
+                        );
                     }
                 } else {
-                    // If no strict status requirement, allow access
                     return <Suspense fallback={null}>{children}</Suspense>;
                 }
             } else {
-                // Role mismatch (e.g. seller trying to access admin route)
                 return <Navigate to='/unauthorized' replace />;
             }
         } 
         
-        // 4. Handle visibility rules (if a route allows specific statuses across roles)
         if (route.visibility) {
-            if (route.visibility.some(r => r === userInfo.status)) {
+            if (userInfo && route.visibility.some(r => r === userInfo.status)) {
                 return <Suspense fallback={null}>{children}</Suspense>;
             } else {
                 return <Navigate to='/unauthorized' replace />;
             }
-        }else{
-            if(route.ability==='seller'){
+        }
+
+        if (route.ability) {
+            if (role === route.ability || route.ability === 'seller') {
                 return <Suspense fallback={null}>{children}</Suspense>;
             }
         }
 
-        // Default fallback if no specialized role rules block it
         return <Suspense fallback={null}>{children}</Suspense>;
 
     } else {
-        // Not logged in at all -> Send straight to login
         return <Navigate to='/login' replace />;
     }
 };

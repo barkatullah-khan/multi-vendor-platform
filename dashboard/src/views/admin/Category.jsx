@@ -1,8 +1,21 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { FaEdit, FaTrash, FaImage } from "react-icons/fa";
 import { BsChevronDoubleRight } from "react-icons/bs";
+import { PropagateLoader } from 'react-spinners';
+import { overrideStyle } from '../../utils/utils';
+import { categoryAdd,get_category,messageClear } from "../../store/Reducers/categoryReducer";
+import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import Search from "../components/Search";
+
 
 const Category = () => {
+
+  const dispatch = useDispatch();
+  
+  // Safe selector: checking lowercase 'category' (change to 'Category' if your store explicitly uses capital C)
+  const { loader,successMessage,errorMessage } = useSelector(state => state.category || state.Category);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [parPage, setParPage] = useState(5);
@@ -18,53 +31,47 @@ const Category = () => {
     }
   };
 
+  const add_category = (e) => {
+    e.preventDefault();
+    dispatch(categoryAdd(state));
+  };
+
+  useEffect(() => {
+        if (successMessage) {
+            toast.success(successMessage);
+            dispatch(messageClear());
+            // Reset form fields after successful addition
+            setState({
+                name: '',
+                image: ''
+            });
+            setImageShow('');
+        }
+        if (errorMessage) {
+            toast.error(errorMessage);
+            dispatch(messageClear());
+        }
+    }, [successMessage, errorMessage, dispatch]);
+
+  useEffect(()=>{
+     const obj={
+      parPage:parseInt(parPage),
+      page:parseInt(currentPage),
+      searchValue
+
+     }
+     dispatch(get_category(obj))
+  },[searchValue,currentPage,parPage])
+  
   return (
     <div className="min-h-screen bg-[#cdcae9] p-5 text-white">
-      {/* Top Navigation Bar / Header */}
-      <div className="bg-[#cdcae9] p-3 rounded-md mb-6 flex justify-between items-center">
-        <input
-          type="text"
-          placeholder="search"
-          className="px-4 py-2 rounded-md bg-[#bbb6e5] text-slate-800 outline-none w-[200px] placeholder-slate-500"
-        />
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <h4 className="font-bold text-slate-800 text-sm">Kazi Ariyan</h4>
-            <span className="text-xs text-slate-600 block">Admin</span>
-          </div>
-          <img
-            src="/images/admin.png"
-            alt="Admin Avatar"
-            className="w-10 h-10 rounded-full border border-slate-300"
-          />
-        </div>
-      </div>
-
       {/* Main Content Layout */}
       <div className="flex flex-wrap w-full gap-y-6">
         {/* LEFT CARD: Table & Controls */}
         <div className="w-full lg:w-7/12 lg:pr-3">
           <div className="bg-[#6d65e8] p-5 rounded-lg shadow-md">
             {/* Table Controls (Per Page & Search) */}
-            <div className="flex justify-between items-center mb-4">
-              <select
-                value={parPage}
-                onChange={(e) => setParPage(parseInt(e.target.value))}
-                className="px-3 py-1.5 bg-[#5c53df] border border-[#7d75ef] rounded text-white outline-none cursor-pointer"
-              >
-                <option value="5">5</option>
-                <option value="15">15</option>
-                <option value="25">25</option>
-              </select>
-
-              <input
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                className="px-4 py-1.5 bg-[#5c53df] border border-[#7d75ef] rounded text-white outline-none placeholder-slate-300"
-                type="text"
-                placeholder="search"
-              />
-            </div>
+           <Search setParPage={setParPage} setSearchValue={setSearchValue} searchValue={searchValue}/>
 
             {/* Category Table */}
             <div className="overflow-x-auto">
@@ -143,7 +150,7 @@ const Category = () => {
               Add Category
             </h2>
 
-            <form>
+            <form onSubmit={add_category}>
               {/* Category Name Input */}
               <div className="flex flex-col gap-1 mb-4">
                 <label className="text-sm text-slate-200" htmlFor="name">
@@ -189,9 +196,18 @@ const Category = () => {
                 />
               </div>
 
-              {/* Bright Red Submit Button */}
-              <button className="w-full bg-[#ff4d4f] hover:bg-[#ff3335] text-white font-semibold py-2.5 rounded transition-all shadow-md">
-                Add Category
+              {/* Submit Button */}
+              <button
+                disabled={loader ? true : false}
+                className="bg-[#059473] w-full hover:shadow-blue-500/50 hover:shadow-lg text-white rounded-md px-7 py-2 mb-3 flex justify-center items-center cursor-pointer"
+              >
+                {
+                  loader ? (
+                    <PropagateLoader color='#fff' cssOverride={overrideStyle} />
+                  ) : (
+                    'Add Category'
+                  )
+                }
               </button>
             </form>
           </div>
