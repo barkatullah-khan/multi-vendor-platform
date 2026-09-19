@@ -34,6 +34,7 @@ export const get_category = createAsyncThunk(
         `/get-category?page=${page}&searchValue=${searchValue}&parPage=${parPage}`,
         { withCredentials: true },
       );
+      console.log(data);
       return fulfillWithValue(data);
     } catch (error) {
       return rejectWithValue(error.response.data);

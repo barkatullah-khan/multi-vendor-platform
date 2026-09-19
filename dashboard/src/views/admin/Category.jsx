@@ -12,9 +12,11 @@ import Search from "../components/Search";
 const Category = () => {
 
   const dispatch = useDispatch();
+
+  
   
   // Safe selector: checking lowercase 'category' (change to 'Category' if your store explicitly uses capital C)
-  const { loader,successMessage,errorMessage } = useSelector(state => state.category || state.Category);
+  const { loader,successMessage,errorMessage,categorys } = useSelector(state => state.category || state.Category);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchValue, setSearchValue] = useState("");
@@ -84,35 +86,52 @@ const Category = () => {
                     <th className="py-3 px-2">ACTION</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {[1, 2, 3, 4, 5].map((item, index) => (
-                    <tr key={index} className="border-b border-[#7b73ed]/50">
-                      <td className="py-3 px-2 font-medium">{index + 1}</td>
-                      <td className="py-3 px-2">
-                        <div className="w-[45px] h-[45px] bg-white rounded flex justify-center items-center overflow-hidden p-1">
-                          <img
-                            className="w-full h-full object-contain"
-                            src={`/images/category/${index + 1}.jpg`}
-                            alt="category item"
-                          />
-                        </div>
-                      </td>
-                      <td className="py-3 px-2 font-medium text-slate-100">
-                        Tshirt
-                      </td>
-                      <td className="py-3 px-2">
-                        <div className="flex items-center gap-2">
-                          <button className="p-2 bg-[#ffb800] rounded hover:opacity-90 text-white">
-                            <FaEdit size={12} />
-                          </button>
-                          <button className="p-2 bg-[#ff4d4d] rounded hover:opacity-90 text-white">
-                            <FaTrash size={12} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+               <tbody className="text-white">
+  {
+    categorys && categorys.length > 0 ? (
+      categorys.map((category, index) => (
+        <tr key={category._id} className="border-b border-[#7b73ed]/50">
+          {/* Index Number */}
+          <td className="py-3 px-2 font-medium">{index + 1}</td>
+          
+          {/* Real Cloudinary Image */}
+          <td className="py-3 px-2">
+            <div className="w-[45px] h-[45px] bg-white rounded flex justify-center items-center overflow-hidden p-1">
+              <img
+                className="w-full h-full object-cover"
+                src={category.image}
+                alt={category.name}
+              />
+            </div>
+          </td>
+          
+          {/* Real Category Name from Database */}
+          <td className="py-3 px-2 font-medium text-slate-100">
+            {category.name}
+          </td>
+          
+          {/* Action Buttons */}
+          <td className="py-3 px-2">
+            <div className="flex items-center gap-2">
+              <button className="p-2 bg-[#ffb800] rounded hover:opacity-90 text-white cursor-pointer">
+                <FaEdit size={12} />
+              </button>
+              <button className="p-2 bg-[#ff4d4d] rounded hover:opacity-90 text-white cursor-pointer">
+                <FaTrash size={12} />
+              </button>
+            </div>
+          </td>
+        </tr>
+      ))
+    ) : (
+      <tr>
+        <td colSpan="4" className="text-center py-4 text-slate-200">
+          No categories found
+        </td>
+      </tr>
+    )
+  }
+</tbody>
               </table>
             </div>
 

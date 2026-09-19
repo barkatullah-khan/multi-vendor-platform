@@ -52,17 +52,16 @@ const productSchema = new Schema({
 }, { timestamps: true });
 
 productSchema.index({
-    name: 'text',
-    category: 'text',
-    brand: 'text',
-    description: 'text'
-}, {
-    weights: {
-        name: 5,
-        category: 4,
-        brand: 3,
-        description: 1
-    }
-});
+    name:'text',
+    category:'text',
+    brand:'text',
+    description:'text',
+
+},{
+    name:5,
+    category:4,
+    brand:3,
+    description:1
+})
 
 module.exports = model('products', productSchema);

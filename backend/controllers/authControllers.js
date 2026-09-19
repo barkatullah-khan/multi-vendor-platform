@@ -7,8 +7,7 @@ const { createToken } = require("../utils/tokenCreate");
 
 class authControllers {
   admin_login = async (req, res) => {
-    console.log("➡️ Admin Login Hit with body:", req.body);
-    // console.log("req.body", req.body);
+ 
     const { email, password } = req.body;
 
     try {
@@ -51,7 +50,7 @@ class authControllers {
   };
 
   seller_register = async (req, res) => {
-    console.log("➡️ Seller Register Controller Hit!", req.body);
+   
     const { email, name, password } = req.body;
 
     try {

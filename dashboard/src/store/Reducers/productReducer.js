@@ -1,17 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import api from '../../api/api';
 
-// API Base URL (adjust port to match your backend)
-const api = axios.create({
-    baseURL: 'http://localhost:5000/api'
-});
-
-// Async Thunk: Add Product
+// 1. ASYNC THUNK: Add Product (Receives the FormData directly from AddProduct.jsx)
 export const add_product = createAsyncThunk(
     'product/add_product',
-    async (productData, { rejectWithValue, fulfillWithValue }) => {
+    async (product, { rejectWithValue, fulfillWithValue }) => {
         try {
-            const { data } = await api.post('/product-add', productData, { withCredentials: true });
+            const { data } = await api.post('/product-add', product, { withCredentials: true });
             return fulfillWithValue(data);
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -19,7 +14,7 @@ export const add_product = createAsyncThunk(
     }
 );
 
-// Async Thunk: Get Products
+// 2. ASYNC THUNK: Get Products (Handles Search & Pagination)
 export const get_products = createAsyncThunk(
     'product/get_products',
     async ({ searchValue, parPage, page }, { rejectWithValue, fulfillWithValue }) => {
@@ -32,6 +27,7 @@ export const get_products = createAsyncThunk(
     }
 );
 
+// 3. REDUX SLICE DEFINITION
 export const productReducer = createSlice({
     name: 'product',
     initialState: {
@@ -50,7 +46,7 @@ export const productReducer = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Add Product
+            // Add Product Lifecycle States
             .addCase(add_product.pending, (state) => {
                 state.loader = true;
             })
@@ -62,7 +58,8 @@ export const productReducer = createSlice({
                 state.loader = false;
                 state.successMessage = payload?.message || 'Product added successfully!';
             })
-            // Get Products
+            
+            // Get Products Lifecycle State
             .addCase(get_products.fulfilled, (state, { payload }) => {
                 state.products = payload.products;
                 state.totalProduct = payload.totalProduct;

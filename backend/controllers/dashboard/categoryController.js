@@ -54,9 +54,44 @@ class categoryController {
     }
  //End of of the Method add_category
 
-get_category=async (req,res)=>{
-    console.log(req.query)
-}
+
+get_category = async (req, res) => {
+
+    
+
+    const { page, searchValue, parPage } = req.query;
+    try {
+        let skipPage = '';
+        if (page && parPage) {
+            skipPage = (parseInt(page) - 1) * parseInt(parPage);
+        }
+        
+        if (searchValue) {
+            // Search query with pagination
+            const categorys = await categoryModel.find({
+                $text: { $search: searchValue }
+            }).skip(skipPage).limit(parPage).sort({ createdAt: -1 });
+            
+            const totalCategory = await categoryModel.find({
+                $text: { $search: searchValue }
+            }).countDocuments();
+            
+            responseReturn(res, 200, { categorys, totalCategory });
+        } else if (page && parPage) {
+            // Standard pagination
+            const categorys = await categoryModel.find({}).skip(skipPage).limit(parPage).sort({ createdAt: -1 });
+            const totalCategory = await categoryModel.find({}).countDocuments();
+            responseReturn(res, 200, { categorys, totalCategory });
+        } else {
+            // Fetch all if no pagination params provided
+            const categorys = await categoryModel.find({}).sort({ createdAt: -1 });
+            const totalCategory = await categoryModel.find({}).countDocuments();
+            responseReturn(res, 200, { categorys, totalCategory });
+        }
+    } catch (error) {
+        responseReturn(res, 500, { error: 'Internal server error' });
+    }
+}//end of get_category
 
 
 }

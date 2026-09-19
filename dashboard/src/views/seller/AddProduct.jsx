@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BsImages } from 'react-icons/bs';
 import { IoMdCloseCircle } from 'react-icons/io';
+import { useSelector, useDispatch } from 'react-redux';
+import { get_category } from '../../store/Reducers/categoryReducer';
+import { add_product, messageClear } from '../../store/Reducers/productReducer';
+import toast from 'react-hot-toast';
 
 const AddProduct = () => {
-    const categorys = [
-        { id: 1, name: 'Sports' },
-        { id: 2, name: 'T-Shirt' },
-        { id: 3, name: 'Mobile' },
-        { id: 4, name: 'Computer' },
-        { id: 5, name: 'Watch' },
-        { id: 6, name: 'Pants' }
-    ];
+    const dispatch = useDispatch();
+    const { categorys } = useSelector(state => state.category);
+    const { successMessage, errorMessage, loader } = useSelector(state => state.product);
 
     const [state, setState] = useState({
         name: '',
@@ -24,12 +23,24 @@ const AddProduct = () => {
 
     const [cateShow, setCateShow] = useState(false);
     const [category, setCategory] = useState('');
-    const [allCategory, setAllCategory] = useState(categorys);
+    const [allCategory, setAllCategory] = useState([]);
     const [searchValue, setSearchValue] = useState('');
 
     // Image Upload States
     const [images, setImages] = useState([]);
     const [imageShow, setImageShow] = useState([]);
+
+    // Fetch categories on component mount
+    useEffect(() => {
+        dispatch(get_category({ searchValue: '', parPage: '', page: '' }));
+    }, [dispatch]);
+
+    // Synchronize Redux categories into local search state when they arrive
+    useEffect(() => {
+        if (categorys) {
+            setAllCategory(categorys);
+        }
+    }, [categorys]);
 
     const inputHandle = (e) => {
         setState({
@@ -42,7 +53,8 @@ const AddProduct = () => {
         const value = e.target.value;
         setSearchValue(value);
         if (value) {
-            setAllCategory(categorys.filter(c => c.name.toLowerCase().includes(value.toLowerCase())));
+            let sm = categorys.filter(c => c.name.toLowerCase().includes(value.toLowerCase()));
+            setAllCategory(sm);
         } else {
             setAllCategory(categorys);
         }
@@ -83,8 +95,46 @@ const AddProduct = () => {
 
     const add = (e) => {
         e.preventDefault();
-        console.log(state, category, images);
+
+        const formData = new FormData();
+        formData.append('name', state.name);
+        formData.append('description', state.description);
+        formData.append('price', state.price);
+        formData.append('stock', state.stock);
+        formData.append('brand', state.brand);
+        formData.append('discount', state.discount);
+        formData.append('shopName', 'EasyShop');
+        formData.append('category', category);
+
+        for (let i = 0; i < images.length; i++) {
+            formData.append('images', images[i]);
+        }
+        console.log(state)
+
+        dispatch(add_product(formData));
     };
+
+    useEffect(() => {
+        if (successMessage) {
+            toast.success(successMessage);
+            dispatch(messageClear());
+            setState({
+                name: '',
+                description: '',
+                discount: '',
+                price: '',
+                brand: '',
+                stock: ''
+            });
+            setCategory('');
+            setImages([]);
+            setImageShow([]);
+        }
+        if (errorMessage) {
+            toast.error(errorMessage);
+            dispatch(messageClear());
+        }
+    }, [successMessage, errorMessage, dispatch]);
 
     return (
         <div className='px-2 lg:px-7 pt-5'>
@@ -248,8 +298,11 @@ const AddProduct = () => {
 
                         {/* Submit Button */}
                         <div className='flex'>
-                            <button className='bg-red-500 hover:shadow-red-500/50 hover:shadow-lg text-white rounded-md px-7 py-2 my-2 font-semibold'>
-                                Add Product
+                            <button
+                                disabled={loader ? true : false}
+                                className='bg-red-500 hover:shadow-red-500/50 hover:shadow-lg text-white rounded-md px-7 py-2 my-2 font-semibold'
+                            >
+                                {loader ? 'Loading...' : 'Add Product'}
                             </button>
                         </div>
                     </form>
